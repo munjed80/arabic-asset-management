@@ -1,8 +1,9 @@
-export default function AssetDetailPage({ params }: { params: { id: string } }) {
+export default async function AssetDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   return (
     <main className="p-6">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">
-        تفاصيل الأصل — <span className="text-blue-600">#{params.id}</span>
+        تفاصيل الأصل — <span className="text-blue-600">#{id}</span>
       </h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
