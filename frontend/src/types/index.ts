@@ -1,18 +1,33 @@
 // Shared TypeScript types for the frontend
 
+export type AssetStatus =
+  | "in_stock"
+  | "active"
+  | "assigned"
+  | "under_maintenance"
+  | "damaged"
+  | "lost"
+  | "retired";
+
 export interface Asset {
   id: number;
-  asset_tag: string;
+  asset_code: string;
   name: string;
-  description?: string;
   serial_number?: string;
-  status: "active" | "inactive" | "under_maintenance" | "disposed";
-  purchase_date?: string;
+  brand?: string;
+  asset_model?: string;
+  status: AssetStatus;
+  acquisition_date?: string;
   purchase_cost?: number;
+  warranty_end?: string;
+  supplier?: string;
+  notes?: string;
   category_id?: number;
   location_id?: number;
   department_id?: number;
-  assigned_to_id?: number;
+  assigned_to_user_id?: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface User {
