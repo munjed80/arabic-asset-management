@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import type { Asset, AssetStatus } from "@/types";
+import type { Asset, AssetMovement, AssetStatus, MovementType } from "@/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -24,6 +24,24 @@ const STATUS_COLORS: Record<AssetStatus, string> = {
   retired: "bg-purple-100 text-purple-700",
 };
 
+const MOVEMENT_LABELS: Record<MovementType, string> = {
+  assign: "تعيين",
+  transfer: "نقل",
+  send_to_maintenance: "إرسال للصيانة",
+  return_from_maintenance: "عودة من الصيانة",
+  mark_lost: "تسجيل مفقود",
+  mark_damaged: "تسجيل تالف",
+};
+
+const MOVEMENT_COLORS: Record<MovementType, string> = {
+  assign: "bg-blue-100 text-blue-700",
+  transfer: "bg-indigo-100 text-indigo-700",
+  send_to_maintenance: "bg-yellow-100 text-yellow-800",
+  return_from_maintenance: "bg-green-100 text-green-700",
+  mark_lost: "bg-red-100 text-red-700",
+  mark_damaged: "bg-orange-100 text-orange-700",
+};
+
 function DetailRow({ label, value }: { label: string; value?: string | number | null }) {
   return (
     <div className="flex justify-between py-2 border-b border-gray-50 last:border-0">
@@ -45,13 +63,28 @@ async function fetchAsset(id: string): Promise<Asset | null> {
   }
 }
 
+async function fetchMovements(id: string): Promise<AssetMovement[]> {
+  try {
+    const res = await fetch(`${API_URL}/api/v1/movements/asset/${id}`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
+}
+
 export default async function AssetDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const asset = await fetchAsset(id);
+  const [asset, movements] = await Promise.all([
+    fetchAsset(id),
+    fetchMovements(id),
+  ]);
 
   if (!asset) {
     return (
@@ -150,12 +183,45 @@ export default async function AssetDetailPage({
             </div>
           )}
 
-          {/* Timeline placeholder */}
-          <div className="bg-white rounded-xl shadow p-6 opacity-60">
-            <h2 className="font-semibold text-gray-700 mb-3">سجل التاريخ</h2>
-            <p className="text-sm text-gray-400">
-              سيتم عرض سجل التغييرات والحركات هنا في إصدار قادم.
-            </p>
+          {/* Movements history */}
+          <div className="bg-white rounded-xl shadow p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-gray-700">سجل الحركات</h2>
+              <Link
+                href={`/movements/new?asset_id=${id}`}
+                className="text-xs text-blue-600 hover:underline"
+              >
+                + تسجيل حركة
+              </Link>
+            </div>
+            {movements.length === 0 ? (
+              <p className="text-sm text-gray-400">لا توجد حركات مسجلة لهذا الأصل.</p>
+            ) : (
+              <ol className="relative border-r border-gray-200 pr-4 space-y-4">
+                {movements.map((mov) => (
+                  <li key={mov.id} className="relative">
+                    <span className="absolute -right-[9px] top-1 w-3.5 h-3.5 rounded-full bg-white border-2 border-blue-400" />
+                    <div className="flex items-start gap-3">
+                      <div className="flex-1 min-w-0">
+                        <span
+                          className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${MOVEMENT_COLORS[mov.movement_type]}`}
+                        >
+                          {MOVEMENT_LABELS[mov.movement_type]}
+                        </span>
+                        {mov.reason && (
+                          <p className="text-xs text-gray-500 mt-1 truncate">
+                            {mov.reason}
+                          </p>
+                        )}
+                      </div>
+                      <time className="text-xs text-gray-400 whitespace-nowrap shrink-0">
+                        {mov.created_at.slice(0, 10)}
+                      </time>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            )}
           </div>
         </div>
 
