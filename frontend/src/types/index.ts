@@ -9,6 +9,14 @@ export type AssetStatus =
   | "lost"
   | "retired";
 
+export type MovementType =
+  | "assign"
+  | "transfer"
+  | "send_to_maintenance"
+  | "return_from_maintenance"
+  | "mark_lost"
+  | "mark_damaged";
+
 export interface Asset {
   id: number;
   asset_code: string;
@@ -28,6 +36,22 @@ export interface Asset {
   assigned_to_user_id?: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface AssetMovement {
+  id: number;
+  asset_id: number;
+  movement_type: MovementType;
+  from_location_id?: number;
+  to_location_id?: number;
+  from_department_id?: number;
+  to_department_id?: number;
+  from_user_id?: number;
+  to_user_id?: number;
+  reason?: string;
+  notes?: string;
+  created_by?: number;
+  created_at: string;
 }
 
 export interface User {

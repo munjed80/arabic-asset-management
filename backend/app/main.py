@@ -3,7 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.database import Base, engine
-from app.routers import assets, auth, categories, departments, health, locations, users
+from app.models import asset_movement  # noqa: F401 — ensures table is registered
+from app.routers import asset_movements, assets, auth, categories, departments, health, locations, users
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -29,3 +30,4 @@ app.include_router(assets.router, prefix="/api/v1")
 app.include_router(categories.router, prefix="/api/v1")
 app.include_router(locations.router, prefix="/api/v1")
 app.include_router(departments.router, prefix="/api/v1")
+app.include_router(asset_movements.router, prefix="/api/v1")
